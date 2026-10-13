@@ -1,0 +1,22 @@
+{
+    "selected_model": "Random Forest",
+    "selection_metric": "lowest MAE",
+    "mae_minutes": 3.8379672836130743,
+    "rmse_minutes": 6.667571024865902,
+    "r2": 0.8168221056767216,
+    "features": [
+        "trip_distance",
+        "passenger_count",
+        "pickup_hour",
+        "pickup_dayofweek",
+        "is_weekend",
+        "is_rush_hour",
+        "PULocationID",
+        "DOLocationID"
+    ],
+    "target": "trip_duration",
+    "target_unit": "minutes",
+    "random_state": 42,
+    "test_size": 0.2,
+    "dataset": "riderush_cleaned_data.parquet"
+}

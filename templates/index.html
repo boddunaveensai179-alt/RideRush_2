@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>RideRush</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="logo">
+            🚕 RideRush
+        </div>
+
+        <div class="subtitle">
+            Intelligent Taxi Demand & ETA Prediction System
+        </div>
+
+    </div>
+
+
+    <!-- MAIN GRID -->
+
+    <div class="main-grid">
+
+
+        <!-- LEFT CARD -->
+
+        <div class="card">
+
+            <div class="card-title">
+                🚕 Ride Details
+            </div>
+
+
+            <form
+                action="/predict"
+                method="POST"
+            >
+
+
+                <!-- PICKUP -->
+
+                <div class="form-group">
+
+                    <label>
+                        Pickup Location
+                    </label>
+
+                    <select
+                        id="pickup_location"
+                        name="pickup_location"
+                        required
+                    >
+
+                        <option value="">
+                            Select pickup location
+                        </option>
+
+                        {% for id, name in zones.items() %}
+
+                        <option value="{{ id }}">
+
+                            {{ name }}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- DROP -->
+
+                <div class="form-group">
+
+                    <label>
+                        Drop Location
+                    </label>
+
+                    <select
+                        id="drop_location"
+                        name="drop_location"
+                        required
+                    >
+
+                        <option value="">
+                            Select drop location
+                        </option>
+
+                        {% for id, name in zones.items() %}
+
+                        <option value="{{ id }}">
+
+                            {{ name }}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- AUTOMATIC DISTANCE -->
+
+                <div class="form-group">
+
+                    <label>
+                        Trip Distance
+                    </label>
+
+                    <div class="distance-container">
+
+                        <input
+                            type="text"
+                            id="distance"
+                            name="distance"
+                            placeholder="Select pickup and drop location"
+                            readonly
+                            required
+                        >
+
+                        <span>
+                            miles
+                        </span>
+
+                    </div>
+
+                    <div
+                        id="distance-status"
+                        class="distance-status"
+                    >
+                    </div>
+
+                </div>
+
+
+                <!-- PASSENGERS -->
+
+                <div class="form-group">
+
+                    <label>
+                        Number of Passengers
+                    </label>
+
+                    <input
+                        type="number"
+                        name="passengers"
+                        min="1"
+                        max="8"
+                        placeholder="Example: 2"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- HOUR -->
+
+                <div class="form-group">
+
+                    <label>
+                        Pickup Hour
+                    </label>
+
+                    <input
+                        type="number"
+                        name="hour"
+                        min="0"
+                        max="23"
+                        placeholder="Example: 18"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- DAY -->
+
+                <div class="form-group">
+
+                    <label>
+                        Day of Week
+                    </label>
+
+                    <select
+                        name="day"
+                    >
+
+                        <option value="0">
+                            Monday
+                        </option>
+
+                        <option value="1">
+                            Tuesday
+                        </option>
+
+                        <option value="2">
+                            Wednesday
+                        </option>
+
+                        <option value="3">
+                            Thursday
+                        </option>
+
+                        <option value="4">
+                            Friday
+                        </option>
+
+                        <option value="5">
+                            Saturday
+                        </option>
+
+                        <option value="6">
+                            Sunday
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- BUTTON -->
+
+                <button
+                    type="submit"
+                    class="predict-btn"
+                >
+
+                    🚕 Predict Ride
+
+                </button>
+
+
+            </form>
+
+        </div>
+
+
+        <!-- RIGHT CARD -->
+
+        <div class="card">
+
+            <div class="card-title">
+
+                📊 Prediction Results
+
+            </div>
+
+
+            {% if demand is defined %}
+
+
+            <!-- ROUTE -->
+
+            <div class="route">
+
+
+                <div class="location">
+
+                    <div class="location-icon">
+                        📍
+                    </div>
+
+                    <strong>
+                        Pickup
+                    </strong>
+
+                    <div class="location-name">
+
+                        {{ pickup_name }}
+
+                    </div>
+
+                    <small>
+
+                        Location ID:
+                        {{ pickup_id }}
+
+                    </small>
+
+                </div>
+
+
+                <div class="arrow">
+                    →
+                </div>
+
+
+                <div class="location">
+
+                    <div class="location-icon">
+                        📍
+                    </div>
+
+                    <strong>
+                        Drop
+                    </strong>
+
+                    <div class="location-name">
+
+                        {{ drop_name }}
+
+                    </div>
+
+                    <small>
+
+                        Location ID:
+                        {{ drop_id }}
+
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- DISTANCE RESULT -->
+
+            <div class="distance-result">
+
+                📏
+
+                <strong>
+                    {{ distance }} miles
+                </strong>
+
+                estimated zone-to-zone distance
+
+            </div>
+
+
+            <!-- RESULTS -->
+
+            <div class="results">
+
+
+                <!-- DEMAND -->
+
+                <div class="result-card">
+
+                    <div class="result-icon">
+                        🚕
+                    </div>
+
+                    <div class="result-label">
+                        Expected Taxi Demand
+                    </div>
+
+                    <div class="result-value">
+                        {{ demand }}
+                    </div>
+
+                    <div class="result-unit">
+                        rides
+                    </div>
+
+                </div>
+
+
+                <!-- ETA -->
+
+                <div class="result-card">
+
+                    <div class="result-icon">
+                        ⏱️
+                    </div>
+
+                    <div class="result-label">
+                        Estimated ETA
+                    </div>
+
+                    <div class="result-value">
+                        {{ eta }}
+                    </div>
+
+                    <div class="result-unit">
+                        minutes
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            {% else %}
+
+
+            <div class="empty-result">
+
+                🚕
+
+                <br><br>
+
+                Select your pickup and drop locations.
+
+                <br>
+
+                The distance will be calculated
+                automatically.
+
+            </div>
+
+
+            {% endif %}
+
+        </div>
+
+    </div>
+    <!-- ETA MODEL INFORMATION -->
+
+    <div class="info-section">
+
+        <h2>
+            🤖 ETA Model Information
+        </h2>
+
+        <div class="info-grid">
+
+            <!-- SELECTED MODEL -->
+
+            <div class="info-box">
+
+                <div class="info-icon">
+                    🌳
+                </div>
+
+                <div class="info-title">
+                    Selected Algorithm
+                </div>
+
+                <div class="info-text">
+                    {{ eta_model_name | default('Model information unavailable') }}
+                </div>
+
+            </div>
+
+            <!-- MAE -->
+
+            <div class="info-box">
+
+                <div class="info-icon">
+                    🎯
+                </div>
+
+                <div class="info-title">
+                    Mean Absolute Error (MAE)
+                </div>
+
+                <div class="info-text">
+
+                    {% if eta_mae is defined and eta_mae is not none %}
+                        {{ "%.2f"|format(eta_mae|float) }} minutes
+                    {% else %}
+                        Not available
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <!-- RMSE -->
+
+            <div class="info-box">
+
+                <div class="info-icon">
+                    📉
+                </div>
+
+                <div class="info-title">
+                    Root Mean Squared Error (RMSE)
+                </div>
+
+                <div class="info-text">
+
+                    {% if eta_rmse is defined and eta_rmse is not none %}
+                        {{ "%.2f"|format(eta_rmse|float) }} minutes
+                    {% else %}
+                        Not available
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <!-- R2 SCORE -->
+
+            <div class="info-box">
+
+                <div class="info-icon">
+                    📊
+                </div>
+
+                <div class="info-title">
+                    R² Score
+                </div>
+
+                <div class="info-text">
+
+                    {% if eta_r2 is defined and eta_r2 is not none %}
+                        {{ "%.4f"|format(eta_r2|float) }}
+                    {% else %}
+                        Not available
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <p style="text-align: center; margin-top: 15px;">
+            Model evaluation metrics are based on the
+            model's evaluation dataset.
+        </p>
+
+    </div>
+
+    <!-- ABOUT -->
+
+    <div class="info-section">
+
+        <h2>
+            About RideRush
+        </h2>
+
+
+        <div class="info-grid">
+
+
+            <div class="info-box">
+
+                <div class="info-icon">
+                    📊
+                </div>
+
+                <div class="info-title">
+                    Demand Prediction
+                </div>
+
+                <div class="info-text">
+
+                    Predicts taxi demand based on
+                    pickup location and time.
+
+                </div>
+
+            </div>
+
+
+            <div class="info-box">
+
+                <div class="info-icon">
+                    ⏱️
+                </div>
+
+                <div class="info-title">
+                    ETA Prediction
+                </div>
+
+                <div class="info-text">
+
+                    Estimates trip duration using
+                    distance, locations and time.
+
+                </div>
+
+            </div>
+
+
+            <div class="info-box">
+
+                <div class="info-icon">
+                    🤖
+                </div>
+
+                <div class="info-title">
+                    Machine Learning
+                </div>
+
+                <div class="info-text">
+
+                    Powered by machine learning
+                    models trained on NYC TLC data.
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <div class="footer">
+
+        RideRush • NYC Taxi Demand & ETA Prediction
+
+    </div>
+
+
+</div>
+
+
+<!-- ============================================================
+     AUTOMATIC DISTANCE JAVASCRIPT
+     ============================================================ -->
+
+<script>
+
+const pickupSelect =
+    document.getElementById(
+        "pickup_location"
+    );
+
+const dropSelect =
+    document.getElementById(
+        "drop_location"
+    );
+
+const distanceInput =
+    document.getElementById(
+        "distance"
+    );
+
+const distanceStatus =
+    document.getElementById(
+        "distance-status"
+    );
+
+
+async function calculateDistance() {
+
+    const pickup =
+        pickupSelect.value;
+
+    const drop =
+        dropSelect.value;
+
+
+    // Nothing selected
+
+    if (
+        pickup === "" ||
+        drop === ""
+    ) {
+
+        distanceInput.value = "";
+
+        distanceInput.placeholder =
+            "Select pickup and drop location";
+
+        distanceStatus.innerText = "";
+
+        return;
+    }
+
+
+    // Same location
+
+    if (pickup === drop) {
+
+        distanceInput.value =
+            "0.00";
+
+        distanceStatus.innerText =
+            "Same pickup and drop zone.";
+
+        return;
+    }
+
+
+    // Loading
+
+    distanceInput.value =
+        "Calculating...";
+
+    distanceStatus.innerText =
+        "Calculating distance...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/calculate_distance",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        pickup_location:
+                            pickup,
+
+                        drop_location:
+                            drop
+
+                    })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            data.success
+        ) {
+
+            distanceInput.value =
+                data.distance;
+
+
+            distanceStatus.innerText =
+                "✓ Distance calculated automatically";
+
+        }
+
+        else {
+
+            distanceInput.value = "";
+
+            distanceStatus.innerText =
+                "Unable to calculate distance.";
+
+            console.error(
+                data.message
+            );
+
+        }
+
+
+    }
+
+    catch (error) {
+
+        distanceInput.value = "";
+
+        distanceStatus.innerText =
+            "Unable to calculate distance.";
+
+        console.error(
+            "Distance API error:",
+            error
+        );
+
+    }
+
+}
+
+
+// Run whenever pickup changes
+
+pickupSelect.addEventListener(
+    "change",
+    calculateDistance
+);
+
+
+// Run whenever drop changes
+
+dropSelect.addEventListener(
+    "change",
+    calculateDistance
+);
+
+</script>
+
+
+</body>
+
+</html>
